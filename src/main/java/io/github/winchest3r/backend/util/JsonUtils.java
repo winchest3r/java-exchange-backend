@@ -1,5 +1,7 @@
 package io.github.winchest3r.backend.util;
 
+import io.github.winchest3r.backend.model.*;
+
 /**
  * Class with static helpers to get data in JSON format.
  */
@@ -12,4 +14,11 @@ public class JsonUtils {
     public static final String getEmpty() {
         return "{}";
     }
+
+    public static String getCurrency(Currency cur) {
+        return String.format(
+            "{\"id\":%d,\"name\":\"%s\",\"code\":\"%s\",\"sign\":\"%s\"}",
+            cur.getId(), cur.getName(), cur.getCode(), cur.getSign()
+        );
+    } 
 }

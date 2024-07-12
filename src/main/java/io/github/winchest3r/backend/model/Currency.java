@@ -6,8 +6,7 @@ public class Currency {
     private String code;
     private String sign;
 
-    public Currency(int id, String name, String code, String sign) {
-        this.id = id;
+    public Currency(String name, String code, String sign) {
         this.name = name;
         this.code = code;
         this.sign = sign;
@@ -15,6 +14,10 @@ public class Currency {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

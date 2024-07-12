@@ -6,8 +6,7 @@ public class Exchange {
     private Currency targetCurrency;
     private double rate;
 
-    public Exchange(int id, Currency base, Currency target, double rate) {
-        this.id = id;
+    public Exchange(Currency base, Currency target, double rate) {
         this.baseCurrency = base;
         this.targetCurrency = target;
         this.rate = rate;
@@ -15,6 +14,10 @@ public class Exchange {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Currency getBaseCurrency() {

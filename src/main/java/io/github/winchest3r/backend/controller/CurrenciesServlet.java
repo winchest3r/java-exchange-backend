@@ -15,19 +15,25 @@ import io.github.winchest3r.backend.util.*;
 
 @WebServlet(name="CurrenciesServlet", urlPatterns = {"/api/currencies/*"})
 public class CurrenciesServlet extends HttpServlet {
-    CurrencyService service;
+    CurrencyService currencyService;
 
     @Override
     public void init(ServletConfig config) {
-        service = new CurrencyService(new CurrencyDaoSimple());
+        currencyService = new CurrencyService(new CurrencyDaoSimple());
         /*
          * TODO: Remove test data with sql data access object
          */
-        service.createCurrency("Russian Ruble", "RUB", "₽");
-        service.createCurrency("US Dollar", "USD", "$");
-        service.createCurrency("Euro", "EUR", "€");
-        service.createCurrency("Yen", "JPY", "¥");
-        service.createCurrency("Yuan", "CNY", "¥");
+        CurrencyModel rub = new CurrencyModel("Russian Ruble", "RUB", "₽");
+        CurrencyModel usd = new CurrencyModel("US Dollar", "USD", "$");
+        CurrencyModel eur = new CurrencyModel("Euro", "EUR", "€");
+        CurrencyModel jpy = new CurrencyModel("Yen", "JPY", "¥");
+        CurrencyModel cny = new CurrencyModel("Yuan", "CNY", "¥");
+        
+        currencyService.createCurrency(rub.getName(), rub.getCode(), rub.getSign());
+        currencyService.createCurrency(usd.getName(), usd.getCode(), usd.getSign());
+        currencyService.createCurrency(eur.getName(), eur.getCode(), eur.getSign());
+        currencyService.createCurrency(jpy.getName(), jpy.getCode(), jpy.getSign());
+        currencyService.createCurrency(cny.getName(), cny.getCode(), cny.getSign());
     }
 
     @Override
@@ -37,9 +43,10 @@ public class CurrenciesServlet extends HttpServlet {
         response.setContentType("application/json");
 
         try (PrintWriter out = response.getWriter()) {
+            // if path is /api/currencies[/]
             if (pathInfo == null || pathInfo.equals("/")) {
                 out.print("[");
-                out.print(service
+                out.print(currencyService
                     .getAllCurrencies()
                     .stream()
                     .map(JsonUtils::getCurrency)
@@ -49,23 +56,28 @@ public class CurrenciesServlet extends HttpServlet {
             } else {
                 String[] splits = pathInfo.split("/");
 
-                // if path is not like /api/currencies/CODE
                 if (splits.length != 2) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print(JsonUtils.getError("Unaccepted path: " + pathInfo));
+                    return;
                 }
 
-                CurrencyModel cur = service.getCurrencyByCode(splits[1]);
+                if (!splits[1].matches("^[A-Za-z]{3}$")) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print(JsonUtils.getError("Code doesn't match to three letters format: " + splits[1]));
+                    return;
+                }
+
+                CurrencyModel cur = currencyService.getCurrencyByCode(splits[1]);
 
                 if (cur == null) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    out.print(JsonUtils.getError("Code not found: " + splits[1]));
+                    return;
                 }
                 
                 out.print(JsonUtils.getCurrency(cur));
             }
-
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -78,17 +90,31 @@ public class CurrenciesServlet extends HttpServlet {
          * TODO: Post only for authorized users with 'Authorization: Token' in header
          */
         Map<String, String[]> params = request.getParameterMap();
-        try {
+        try (PrintWriter out = response.getWriter()) {
             if (!params.containsKey("name") || !params.containsKey("code") || !params.containsKey("sign")) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(JsonUtils.getError("Request doesn't have needed parameter(s): name, code, sign"));
+                return;
             }
 
-            if (service.getCurrencyByCode(params.get("code")[0]) != null) {
-                response.sendError(HttpServletResponse.SC_CONFLICT);
+            String name = params.get("name")[0];
+            String code = params.get("code")[0];
+            String sign = params.get("sign")[0];
+
+            if (!code.matches("^[A-Za-z]{3}$")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(JsonUtils.getError("Code doesn't match to three letters format: " + code));
+                return;
             }
 
-            service.createCurrency(params.get("name")[0], params.get("code")[0], params.get("sign")[0]);
-            // send 201
+            if (currencyService.getCurrencyByCode(code) != null) {
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                out.print(JsonUtils.getError("Currency with code '" + code + "' already exists"));
+                return;
+            }
+
+            currencyService.createCurrency(name, code, sign);
+            response.setStatus(201);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();

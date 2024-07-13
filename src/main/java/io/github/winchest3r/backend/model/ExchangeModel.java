@@ -16,8 +16,16 @@ public class ExchangeModel {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    /**
+     * Create new object with new id
+     * 
+     * @param id
+     * @return new object
+     */
+    public ExchangeModel setId(int id) {
+        ExchangeModel ret = new ExchangeModel(baseCurrency, targetCurrency, rate);
+        ret.id = id;
+        return ret;
     }
 
     public CurrencyModel getBaseCurrency() {
@@ -30,5 +38,17 @@ public class ExchangeModel {
 
     public double getRate() {
         return rate;
+    }
+
+    /**
+     * Create new object with new rate
+     * 
+     * @param rate
+     * @return new object
+     */
+    public ExchangeModel setRate(double rate) {
+        ExchangeModel ret = new ExchangeModel(baseCurrency, targetCurrency, rate);
+        ret.id = id;
+        return ret;
     }
 }

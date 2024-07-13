@@ -17,10 +17,16 @@ public class CurrencyService {
     }
 
     public CurrencyModel getCurrencyByCode(String code) {
-        return currencyDao.getByCode(code);
+        Optional<CurrencyModel> currencyOpt = currencyDao
+            .getAll()
+            .stream()
+            .parallel()
+            .filter(c -> c.getCode().equals(code.toUpperCase()))
+            .findAny();
+        return currencyOpt.isPresent() ? currencyOpt.get() : null;
     }
 
     public void createCurrency(String name, String code, String sign) {
-        currencyDao.create(new CurrencyModel(name, code, sign));
+        currencyDao.create(name, code, sign);
     }
 }

@@ -17,21 +17,12 @@ public class CurrencyDaoSimple implements CurrencyDao {
     }
 
     @Override
-    public CurrencyModel getByCode(String code) {
-        Optional<CurrencyModel> currency = data
-            .stream()
-            .parallel()
-            .filter(c -> c.getCode().equals(code))
-            .findAny();
-        if (currency.isPresent()) {
-            return currency.get();
-        }
-        return null;
+    public CurrencyModel get(int id) {
+        return data.get(id);
     }
 
     @Override
-    public void create(CurrencyModel currency) {
-        currency.setId(data.size());
-        data.add(currency);
+    public void create(String name, String code, String sign) {
+        data.add(new CurrencyModel(name, code, sign).setId(data.size()));
     }
 }

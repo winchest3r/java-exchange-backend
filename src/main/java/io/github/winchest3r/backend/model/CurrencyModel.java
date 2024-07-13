@@ -16,8 +16,16 @@ public class CurrencyModel {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    /**
+     * Returns new object with new id
+     * 
+     * @param id integer id
+     * @return Currency object with new id
+     */
+    public CurrencyModel setId(int id) {
+        CurrencyModel ret = new CurrencyModel(name, code, sign);
+        ret.id = id;
+        return ret;
     }
 
     public String getName() {

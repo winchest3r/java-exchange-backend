@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 
 import java.io.*;
+import java.util.*;
 import java.util.stream.*;
 
 import io.github.winchest3r.backend.service.*;
@@ -53,7 +54,7 @@ public class CurrenciesServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 }
 
-                Currency cur = service.getCurrencyByCode(splits[1]);
+                CurrencyModel cur = service.getCurrencyByCode(splits[1]);
 
                 if (cur == null) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -65,6 +66,29 @@ public class CurrenciesServlet extends HttpServlet {
         } catch (IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+        /*
+         * TODO: Post only for authorized users with 'Authorization: Token' in header
+         */
+        Map<String, String[]> params = request.getParameterMap();
+        try {
+            if (!params.containsKey("name") || !params.containsKey("code") || !params.containsKey("sign")) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            if (service.getCurrencyByCode(params.get("code")[0]) != null) {
+                response.sendError(HttpServletResponse.SC_CONFLICT);
+            }
+
+            service.createCurrency(params.get("name")[0], params.get("code")[0], params.get("sign")[0]);
+            // send 201
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();

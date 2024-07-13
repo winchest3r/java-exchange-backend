@@ -2,23 +2,23 @@ package io.github.winchest3r.backend.dao;
 
 import java.util.*;
 
-import io.github.winchest3r.backend.model.Currency;
+import io.github.winchest3r.backend.model.CurrencyModel;
 
 /**
  * Currency data access object for tests.
  * Contains array to collect data.
  */
 public class CurrencyDaoSimple implements CurrencyDao {
-    private List<Currency> data = new ArrayList<>();
+    private List<CurrencyModel> data = new ArrayList<>();
 
     @Override
-    public List<Currency> getAll() {
+    public List<CurrencyModel> getAll() {
         return data;
     }
 
     @Override
-    public Currency getByCode(String code) {
-        Optional<Currency> currency = data
+    public CurrencyModel getByCode(String code) {
+        Optional<CurrencyModel> currency = data
             .stream()
             .parallel()
             .filter(c -> c.getCode().equals(code))
@@ -30,7 +30,7 @@ public class CurrencyDaoSimple implements CurrencyDao {
     }
 
     @Override
-    public void create(Currency currency) {
+    public void create(CurrencyModel currency) {
         currency.setId(data.size());
         data.add(currency);
     }

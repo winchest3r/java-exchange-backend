@@ -2,16 +2,16 @@ package io.github.winchest3r.backend.dao;
 
 import java.util.*;
 
-import io.github.winchest3r.backend.model.Currency;
+import io.github.winchest3r.backend.model.CurrencyModel;
 
 public interface CurrencyDao {
-    List<Currency> getAll();
+    List<CurrencyModel> getAll();
 
     /**
      * 
-     * @param code
+     * @param code currency code (three letter thing)
      * @return currency if code found, null otherwise
      */
-    Currency getByCode(String code);
-    void create(Currency currency);
+    CurrencyModel getByCode(String code);
+    void create(CurrencyModel currency);
 }

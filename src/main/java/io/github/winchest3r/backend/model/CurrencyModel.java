@@ -1,12 +1,12 @@
 package io.github.winchest3r.backend.model;
 
-public class Currency {
+public class CurrencyModel {
     private int id;
     private String name;
     private String code;
     private String sign;
 
-    public Currency(String name, String code, String sign) {
+    public CurrencyModel(String name, String code, String sign) {
         this.name = name;
         this.code = code;
         this.sign = sign;

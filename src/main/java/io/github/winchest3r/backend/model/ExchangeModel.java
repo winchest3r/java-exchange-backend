@@ -1,12 +1,12 @@
 package io.github.winchest3r.backend.model;
 
-public class Exchange {
+public class ExchangeModel {
     private int id;
-    private Currency baseCurrency;
-    private Currency targetCurrency;
+    private CurrencyModel baseCurrency;
+    private CurrencyModel targetCurrency;
     private double rate;
 
-    public Exchange(Currency base, Currency target, double rate) {
+    public ExchangeModel(CurrencyModel base, CurrencyModel target, double rate) {
         this.baseCurrency = base;
         this.targetCurrency = target;
         this.rate = rate;
@@ -20,11 +20,11 @@ public class Exchange {
         this.id = id;
     }
 
-    public Currency getBaseCurrency() {
+    public CurrencyModel getBaseCurrency() {
         return baseCurrency;
     }
 
-    public Currency getTargetCurrency() {
+    public CurrencyModel getTargetCurrency() {
         return targetCurrency;
     }
 

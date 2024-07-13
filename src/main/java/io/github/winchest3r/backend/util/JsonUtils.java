@@ -15,7 +15,7 @@ public class JsonUtils {
         return "{}";
     }
 
-    public static String getCurrency(Currency cur) {
+    public static String getCurrency(CurrencyModel cur) {
         return String.format(
             "{\"id\":%d,\"name\":\"%s\",\"code\":\"%s\",\"sign\":\"%s\"}",
             cur.getId(), cur.getName(), cur.getCode(), cur.getSign()

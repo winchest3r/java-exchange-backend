@@ -34,6 +34,19 @@ public class JsonUtils {
         );
     }
 
+    public static String getConvertedAmount(
+        CurrencyModel base,
+        CurrencyModel target,
+        double rate,
+        double amount) {
+        
+        return String.format(
+            Locale.US,
+            "{\"baseCurrency\":%s,\"targetCurrency\":%s,\"rate\":%.4f,\"amount\":%.4f,\"convertedAmount\":%.4f}",
+            getCurrency(base), getCurrency(target), rate, amount, rate * amount
+        );
+    }
+
     public static String getError(String message) {
         return String.format(Locale.US, "{\"error\":\"%s\"}", message);
     }

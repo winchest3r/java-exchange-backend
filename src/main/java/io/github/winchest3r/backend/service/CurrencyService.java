@@ -26,7 +26,7 @@ public class CurrencyService {
         return currencyOpt.isPresent() ? currencyOpt.get() : null;
     }
 
-    public void createCurrency(String name, String code, String sign) {
-        currencyDao.create(name, code, sign);
+    public CurrencyModel createCurrency(String name, String code, String sign) {
+        return currencyDao.create(name, code, sign);
     }
 }

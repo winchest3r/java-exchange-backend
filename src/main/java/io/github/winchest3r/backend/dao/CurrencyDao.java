@@ -8,5 +8,5 @@ public interface CurrencyDao {
     List<CurrencyModel> getAll();
 
     CurrencyModel get(int id);
-    void create(String name, String code, String sign);
+    CurrencyModel create(String name, String code, String sign);
 }

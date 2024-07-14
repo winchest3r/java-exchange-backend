@@ -23,17 +23,17 @@ public class ExchangeService {
             .stream()
             .parallel()
             .filter(e -> 
-                e.getBaseCurrency().getCode().equals(baseCode)
-                && e.getTargetCurrency().getCode().equals(targetCode))
+                e.getBaseCurrency().getCode().equals(baseCode.toUpperCase())
+                && e.getTargetCurrency().getCode().equals(targetCode.toUpperCase()))
             .findAny();
         return exchangeOpt.isPresent() ? exchangeOpt.get() : null;
     }
 
-    public void createExchange(CurrencyModel base, CurrencyModel target, double rate) {
-        exchangeDao.create(base, target, rate);
+    public ExchangeModel createExchange(CurrencyModel base, CurrencyModel target, double rate) {
+        return exchangeDao.create(base, target, rate);
     }
 
-    public void updateExchange(CurrencyModel base, CurrencyModel target, double rate) {
-        exchangeDao.update(base.getId(), target.getId(), rate);
+    public ExchangeModel updateExchange(CurrencyModel base, CurrencyModel target, double rate) {
+        return exchangeDao.update(base.getId(), target.getId(), rate);
     }
 }

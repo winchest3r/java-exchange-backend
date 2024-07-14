@@ -20,20 +20,6 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) {
         currencyService = new CurrencyService(new CurrencyDaoSimple());
-        /*
-         * TODO: Remove test data with sql data access object
-         */
-        CurrencyModel rub = new CurrencyModel("Russian Ruble", "RUB", "₽");
-        CurrencyModel usd = new CurrencyModel("US Dollar", "USD", "$");
-        CurrencyModel eur = new CurrencyModel("Euro", "EUR", "€");
-        CurrencyModel jpy = new CurrencyModel("Yen", "JPY", "¥");
-        CurrencyModel cny = new CurrencyModel("Yuan", "CNY", "¥");
-        
-        currencyService.createCurrency(rub.getName(), rub.getCode(), rub.getSign());
-        currencyService.createCurrency(usd.getName(), usd.getCode(), usd.getSign());
-        currencyService.createCurrency(eur.getName(), eur.getCode(), eur.getSign());
-        currencyService.createCurrency(jpy.getName(), jpy.getCode(), jpy.getSign());
-        currencyService.createCurrency(cny.getName(), cny.getCode(), cny.getSign());
     }
 
     @Override
@@ -76,6 +62,7 @@ public class CurrenciesServlet extends HttpServlet {
                     return;
                 }
                 
+                response.setStatus(HttpServletResponse.SC_OK);
                 out.print(JsonUtils.getCurrency(cur));
             }
         } catch (Exception e) {
@@ -86,9 +73,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        /*
-         * TODO: Post only for authorized users with 'Authorization: Token' in header
-         */
         Map<String, String[]> params = request.getParameterMap();
         try (PrintWriter out = response.getWriter()) {
             if (!params.containsKey("name") || !params.containsKey("code") || !params.containsKey("sign")) {
@@ -113,8 +97,9 @@ public class CurrenciesServlet extends HttpServlet {
                 return;
             }
 
-            currencyService.createCurrency(name, code, sign);
-            response.setStatus(201);
+            CurrencyModel newCurrency = currencyService.createCurrency(name, code, sign);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            out.print(JsonUtils.getCurrency(newCurrency));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();

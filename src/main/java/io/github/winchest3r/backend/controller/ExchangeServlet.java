@@ -4,74 +4,103 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.*;
 
+import java.util.*;
 import java.io.*;
-import java.util.stream.*;
 
-import io.github.winchest3r.backend.dao.ExchangeDaoSimple;
-import io.github.winchest3r.backend.model.CurrencyModel;
-import io.github.winchest3r.backend.service.ExchangeService;
+import io.github.winchest3r.backend.service.*;
+import io.github.winchest3r.backend.dao.*;
+import io.github.winchest3r.backend.model.*;
 
 import io.github.winchest3r.backend.util.JsonUtils;
 
-@WebServlet(name="ExchangeServlet", urlPatterns = {"/api/exchange-rates/*"})
-public class ExchangeServlet extends HttpServlet {
-    ExchangeService exchangeService;    
+@WebServlet(name="ExchangeServlet", urlPatterns={"/api/exchange"})
+public class ExchangeServlet  extends HttpServlet {
+    CurrencyService currencyService;
+    ExchangeService exchangeService;
 
     @Override
     public void init(ServletConfig config) {
+        currencyService = new CurrencyService(new CurrencyDaoSimple());
         exchangeService = new ExchangeService(new ExchangeDaoSimple());
-        /*
-         * TODO: Remove test data with sql data access object
-         */
-        CurrencyModel rub = new CurrencyModel("Russian Ruble", "RUB", "₽").setId(0);
-        CurrencyModel usd = new CurrencyModel("US Dollar", "USD", "$").setId(1);
-        CurrencyModel eur = new CurrencyModel("Euro", "EUR", "€").setId(2);
-        CurrencyModel jpy = new CurrencyModel("Yen", "JPY", "¥").setId(3);
-        CurrencyModel cny = new CurrencyModel("Yuan", "CNY", "¥").setId(4);
-
-        exchangeService.createExchange(usd, eur, 0.9167);
-        exchangeService.createExchange(eur, usd, 1.0908);
-        exchangeService.createExchange(rub, eur, 0.0104);
-        exchangeService.createExchange(eur, rub, 95.8475);
-        exchangeService.createExchange(usd, rub, 87.8644);
-        exchangeService.createExchange(rub, usd, 0.0114);
-        exchangeService.createExchange(jpy, cny, 0.0460);
-        exchangeService.createExchange(cny, jpy, 21.7568);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        String pathInfo = request.getPathInfo();
-
         response.setContentType("application/json");
 
+        Map<String, String[]> params = request.getParameterMap();
+
         try (PrintWriter out = response.getWriter()) {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                out.print("[");
-                out.print(exchangeService.getAll().stream().map(JsonUtils::getExchange).collect(Collectors.joining(",")));
-                out.print("]");
-            } else {
-                String[] splits = pathInfo.split("/");
-
-                // if path is not like /api/currencies/CODE
-                if (splits.length != 2) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                }
-
-                /* 
-                 * TODO: Find exchange rate by CODE PAIRS
-                 * if there is no CODES like this - 404 (SC_NOT_FOUND)
-                 * convert result to json
-                 */
-                
-                out.print(String.format("{\"dummy\":%s}", splits[1]));
+            if (!params.containsKey("from") || !params.containsKey("to") || !params.containsKey("amount")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(JsonUtils.getError("Request doesn't have needed parameter(s): from, to, amount"));
+                return;
             }
 
+            String baseCode = params.get("from")[0].toUpperCase();
+            String targetCode = params.get("to")[0].toUpperCase();
+            String amountString = params.get("amount")[0];
+
+            if (!baseCode.matches("^[A-Za-z]{3}$") || !targetCode.matches("^[A-Za-z]{3}$")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(JsonUtils.getError(
+                    "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode
+                ));
+                return;
+            }
+
+            Double amount = null;
+            try {
+                amount = Double.valueOf(amountString);
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(JsonUtils.getError("Can't get amount value: " + e.getMessage()));
+                return;
+            }
+
+            if (baseCode.equals(targetCode)) {
+                CurrencyModel currency = currencyService.getCurrencyByCode(baseCode);
+                response.setStatus(HttpServletResponse.SC_OK);
+                out.print(JsonUtils.getConvertedAmount(currency, currency, 1, amount));
+                return;
+            }
+
+            CurrencyModel baseCurrency = currencyService.getCurrencyByCode(baseCode);
+            CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
+
+            if (baseCurrency == null || targetCurrency == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                out.print(JsonUtils.getError("Can't find base or/and target currencies: " + baseCode + ", " + targetCode));
+                return;
+            }
+
+            ExchangeModel exchange = exchangeService.getExchangeByCodePair(baseCode, targetCode);
+            ExchangeModel reversedExchange = exchangeService.getExchangeByCodePair(targetCode, baseCode);
+            
+            Double rate = null;
+
+            if (exchange != null) {
+                rate = exchange.getRate();
+            } else if (reversedExchange != null) {
+                rate = 1 / reversedExchange.getRate();
+            } else {
+                ExchangeModel usdToBase = exchangeService.getExchangeByCodePair("USD", baseCode);
+                ExchangeModel usdToTarget = exchangeService.getExchangeByCodePair("USD", targetCode);
+
+                if (usdToBase == null || usdToTarget == null) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    out.print(JsonUtils.getError("Can't find base and target exchanges: " + baseCode + ", " + targetCode));
+                    return;
+                }
+
+                rate = usdToTarget.getRate() / usdToBase.getRate();
+            }
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            out.print(JsonUtils.getConvertedAmount(baseCurrency, targetCurrency, rate, amount));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
-
-    // TODO: doPost
 }

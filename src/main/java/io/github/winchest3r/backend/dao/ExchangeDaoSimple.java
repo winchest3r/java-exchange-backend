@@ -3,18 +3,19 @@ package io.github.winchest3r.backend.dao;
 import java.util.*;
 
 import io.github.winchest3r.backend.model.*;
+import io.github.winchest3r.backend.util.SimpleDatabase;
 
 public class ExchangeDaoSimple implements ExchangeDao {
-    private List<ExchangeModel> data = new ArrayList<>();
+    SimpleDatabase db = SimpleDatabase.INSTANCE;
 
     @Override
     public List<ExchangeModel> getAll() {
-        return data;
+        return db.exchangeRates;
     }
 
     @Override
     public ExchangeModel get(int baseId, int targetId) {
-        Optional<ExchangeModel> exchangeOpt = data
+        Optional<ExchangeModel> exchangeOpt = db.exchangeRates
             .stream()
             .parallel()
             .filter(e -> 
@@ -25,15 +26,20 @@ public class ExchangeDaoSimple implements ExchangeDao {
     }
 
     @Override
-    public void create(CurrencyModel base, CurrencyModel target, double rate) {
-        data.add(new ExchangeModel(base, target, rate).setId(data.size()));
+    public ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate) {
+        ExchangeModel ex = new ExchangeModel(base, target, rate).setId(db.exchangeRates.size());
+        db.exchangeRates.add(ex);
+        return ex;
     }
 
     @Override
-    public void update(int baseId, int targetId, double rate) {
+    public ExchangeModel update(int baseId, int targetId, double rate) {
         ExchangeModel sought = get(baseId, targetId);
         if (sought != null) {
-            data.set(sought.getId(), sought.setRate(rate));
+            ExchangeModel updatedExchange = sought.setRate(rate);
+            db.exchangeRates.set(sought.getId(), updatedExchange);
+            sought = updatedExchange;
         }
+        return sought;
     }
 }

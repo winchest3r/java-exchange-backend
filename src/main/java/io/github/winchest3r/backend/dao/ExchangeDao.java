@@ -16,7 +16,7 @@ public interface ExchangeDao {
      */
     ExchangeModel get(int baseId, int targetId);
 
-    void create(CurrencyModel base, CurrencyModel target, double rate);
+    ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate);
 
-    void update(int baseId, int targetId, double rate);
+    ExchangeModel update(int baseId, int targetId, double rate);
 }

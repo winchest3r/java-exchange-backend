@@ -26,6 +26,19 @@ public class ExchangeDaoSimple implements ExchangeDao {
     }
 
     @Override
+    public ExchangeModel get(String baseCode, String targetCode) {
+        Optional<ExchangeModel> exchangeOpt = db.exchangeRates
+            .stream()
+            .parallel()
+            .filter(e -> 
+                e.getBaseCurrency().getCode().equals(baseCode.toUpperCase())
+                && e.getTargetCurrency().getCode().equals(targetCode.toUpperCase()))
+            .findAny();
+        
+        return exchangeOpt.isPresent() ? exchangeOpt.get() : null;
+    }
+
+    @Override
     public ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate) {
         ExchangeModel ex = new ExchangeModel(base, target, rate).setId(db.exchangeRates.size());
         db.exchangeRates.add(ex);

@@ -15,6 +15,8 @@ public interface ExchangeDao {
      * @return Exchange object with rate data
      */
     ExchangeModel get(int baseId, int targetId);
+    
+    ExchangeModel get(String baseCode, String targetCode);
 
     ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate);
 

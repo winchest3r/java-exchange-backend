@@ -18,6 +18,8 @@ public class SqlQueries {
 
     public static final String CREATE_NEW_CURRENCY = BASE_PATH + "createNewCurrency.sql";
 
+    public static final String GET_EXCHANGE_RATES = BASE_PATH + "getExchangeRates.sql";
+
     private static ServletContext context;
 
     public static void setServletContext(ServletContext servletContext) {

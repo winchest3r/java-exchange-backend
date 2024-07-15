@@ -68,6 +68,7 @@ public class CurrencyDaoSqlite implements CurrencyDao {
             String query = SqlQueries.readQuery(SqlQueries.GET_CURRENCY_BY_CODE);
 
             try (PreparedStatement prepStat = con.prepareStatement(query)) {
+                code = code.toUpperCase();
                 prepStat.setString(1, code);
                 try (ResultSet rs = prepStat.executeQuery()) {
                     if (rs.next()) {
@@ -95,7 +96,7 @@ public class CurrencyDaoSqlite implements CurrencyDao {
             int result = 0;
             try (PreparedStatement prepStat = con.prepareStatement(query)) {
                 prepStat.setString(1, name);
-                prepStat.setString(2, code);
+                prepStat.setString(2, code.toUpperCase());
                 prepStat.setString(3, sign);
                 result = prepStat.executeUpdate();
             }

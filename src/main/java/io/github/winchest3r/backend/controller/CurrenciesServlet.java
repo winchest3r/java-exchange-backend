@@ -19,6 +19,8 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) {
+        config.getServletContext().log(getClass().getName() + ": Initialization");
+
         currencyService = new CurrencyService(new CurrencyDaoSimple());
     }
 
@@ -43,22 +45,28 @@ public class CurrenciesServlet extends HttpServlet {
                 String[] splits = pathInfo.split("/");
 
                 if (splits.length != 2) {
+                    String errorMessage = "Unaccepted path: " + pathInfo;
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print(JsonUtils.getError("Unaccepted path: " + pathInfo));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
                 if (!splits[1].matches("^[A-Za-z]{3}$")) {
+                    String errorMessage = "Code doesn't match to three letters format: " + splits[1];
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print(JsonUtils.getError("Code doesn't match to three letters format: " + splits[1]));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
                 CurrencyModel cur = currencyService.getCurrencyByCode(splits[1]);
 
                 if (cur == null) {
+                    String errorMessage = "Code not found: " + splits[1];
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    out.print(JsonUtils.getError("Code not found: " + splits[1]));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
                 
@@ -66,8 +74,8 @@ public class CurrenciesServlet extends HttpServlet {
                 out.print(JsonUtils.getCurrency(cur));
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP GET request", e);
         }
     }
 
@@ -76,6 +84,8 @@ public class CurrenciesServlet extends HttpServlet {
         Map<String, String[]> params = request.getParameterMap();
         try (PrintWriter out = response.getWriter()) {
             if (!params.containsKey("name") || !params.containsKey("code") || !params.containsKey("sign")) {
+                String errorMessage = "Request doesn't have needed parameter(s): name, code, sign";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print(JsonUtils.getError("Request doesn't have needed parameter(s): name, code, sign"));
                 return;
@@ -86,14 +96,18 @@ public class CurrenciesServlet extends HttpServlet {
             String sign = params.get("sign")[0];
 
             if (!code.matches("^[A-Za-z]{3}$")) {
+                String errorMessage = "Code doesn't match to three letters format: " + code;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Code doesn't match to three letters format: " + code));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
             if (currencyService.getCurrencyByCode(code) != null) {
+                String errorMessage = "Currency with code '" + code + "' already exists";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                out.print(JsonUtils.getError("Currency with code '" + code + "' already exists"));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -101,8 +115,8 @@ public class CurrenciesServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CREATED);
             out.print(JsonUtils.getCurrency(newCurrency));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP POST request", e);
         }
     }
 }

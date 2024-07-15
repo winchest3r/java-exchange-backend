@@ -20,6 +20,8 @@ public class ExchangeServlet  extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) {
+        config.getServletContext().log(getClass().getName() + ": Initialization");
+
         currencyService = new CurrencyService(new CurrencyDaoSimple());
         exchangeService = new ExchangeService(new ExchangeDaoSimple());
     }
@@ -32,8 +34,10 @@ public class ExchangeServlet  extends HttpServlet {
 
         try (PrintWriter out = response.getWriter()) {
             if (!params.containsKey("from") || !params.containsKey("to") || !params.containsKey("amount")) {
+                String errorMessage = "Request doesn't have needed parameter(s): from, to, amount";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Request doesn't have needed parameter(s): from, to, amount"));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -42,10 +46,10 @@ public class ExchangeServlet  extends HttpServlet {
             String amountString = params.get("amount")[0];
 
             if (!baseCode.matches("^[A-Za-z]{3}$") || !targetCode.matches("^[A-Za-z]{3}$")) {
+                String errorMessage = "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(
-                    "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -53,8 +57,10 @@ public class ExchangeServlet  extends HttpServlet {
             try {
                 amount = Double.valueOf(amountString);
             } catch (NumberFormatException e) {
+                String errorMessage = "Can't get amount value: " + e.getMessage();
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Can't get amount value: " + e.getMessage()));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -69,8 +75,10 @@ public class ExchangeServlet  extends HttpServlet {
             CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
 
             if (baseCurrency == null || targetCurrency == null) {
+                String errorMessage = "Can't find base or/and target currencies: " + baseCode + ", " + targetCode;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print(JsonUtils.getError("Can't find base or/and target currencies: " + baseCode + ", " + targetCode));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -88,8 +96,10 @@ public class ExchangeServlet  extends HttpServlet {
                 ExchangeModel usdToTarget = exchangeService.getExchangeByCodePair("USD", targetCode);
 
                 if (usdToBase == null || usdToTarget == null) {
+                    String errorMessage = "Can't find base and target exchanges: " + baseCode + ", " + targetCode;
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    out.print(JsonUtils.getError("Can't find base and target exchanges: " + baseCode + ", " + targetCode));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
@@ -99,8 +109,8 @@ public class ExchangeServlet  extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             out.print(JsonUtils.getConvertedAmount(baseCurrency, targetCurrency, rate, amount));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP GET request", e);
         }
     }
 }

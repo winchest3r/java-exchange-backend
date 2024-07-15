@@ -1,7 +1,6 @@
 package io.github.winchest3r.backend.util;
 
 import java.io.*;
-import java.nio.file.*;
 import java.sql.*;
 import javax.sql.*;
 
@@ -19,9 +18,10 @@ public class SqliteDataSource implements ServletContextListener {
         try {
             String dbPath = sce.getServletContext().getResource(SqlQueries.BASE_PATH).getPath() + DB_NAME;
 
-            // If database is not exists -> initialize it after creation
+            // If database does not exist -> initialize it after creation
             boolean isInitialized = false;
             if (new File(dbPath).isFile()) {
+                sce.getServletContext().log(getClass().getName() +  ": " + DB_NAME + " found. Initialization is not required");
                 isInitialized = true;
             }
 
@@ -31,12 +31,17 @@ public class SqliteDataSource implements ServletContextListener {
             dataSource = new HikariDataSource(config);
 
             if (!isInitialized) {
+                sce.getServletContext().log(getClass().getName() +  ": Process database initialization");
                 initializeDatabase(sce);
             }
 
+            sce.getServletContext().log(getClass().getName() +  ": " + DB_NAME + " loaded");
+
         } catch (Exception e) {
-            System.out.println("Failed to initialize database: " + e.getMessage());
-            throw new RuntimeException("Failed to initialize database: " + e.getMessage());
+            sce.getServletContext().log(
+                getClass().getName() +  ": Failed to initialize database", e);
+            throw new RuntimeException(
+                getClass().getName() +  ": Failed to initialize database: " + e.getMessage());
         }
     }
 
@@ -66,6 +71,7 @@ public class SqliteDataSource implements ServletContextListener {
                         sql.setLength(0);
                     }
                 }
+                sce.getServletContext().log(SqliteDataSource.class.getName() + ": Tables are created");
 
                 // Fill with initial data
                 while ((line = fillReader.readLine()) != null) {
@@ -75,11 +81,14 @@ public class SqliteDataSource implements ServletContextListener {
                         sql.setLength(0);
                     }
                 }
+                sce.getServletContext().log(SqliteDataSource.class.getName() + ": Tables are filled");
             }
             
         } catch (Exception e) {
-            System.out.println("Failed to initialize database: " + e.getMessage());
-            throw new RuntimeException("Failed to initialize database: " + e.getMessage());
+            sce.getServletContext().log(
+                SqliteDataSource.class.getName() + ": Failed to initialize database", e);
+            throw new RuntimeException(
+                SqliteDataSource.class.getName() + ": Failed to initialize database: " + e.getMessage());
         }
     }
 

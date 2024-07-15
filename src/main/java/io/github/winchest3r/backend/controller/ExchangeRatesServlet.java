@@ -24,6 +24,8 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) {
+        config.getServletContext().log(getClass().getName() + ": Initialization");
+
         exchangeService = new ExchangeService(new ExchangeDaoSimple());
         currencyService = new CurrencyService(new CurrencyDaoSimple());
     }
@@ -49,14 +51,18 @@ public class ExchangeRatesServlet extends HttpServlet {
                 String[] splits = pathInfo.split("/");
 
                 if (splits.length != 2) {
+                    String errorMessage = "Unaccepted path: " + pathInfo;
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print(JsonUtils.getError("Unaccepted path: " + pathInfo));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
                 if (!splits[1].matches("^[A-Za-z]{6}$")) {
+                    String errorMessage = "Code doesn't match to CODE1CODE2 pattern: " + splits[1];
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print(JsonUtils.getError("Code doesn't match to CODE1CODE2 pattern: " + splits[1]));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
@@ -66,8 +72,10 @@ public class ExchangeRatesServlet extends HttpServlet {
                 ExchangeModel exchange = exchangeService.getExchangeByCodePair(code1, code2);
 
                 if (exchange == null) {
+                    String errorMessage = "Can't find code pair: " + code1 + ", " + code2;
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    out.print(JsonUtils.getError("Can't find code pair: " + code1 + ", " + code2));
+                    out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
@@ -76,8 +84,8 @@ public class ExchangeRatesServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP GET request", e);
         }
     }
 
@@ -91,10 +99,10 @@ public class ExchangeRatesServlet extends HttpServlet {
                 || !params.containsKey("targetCurrencyCode")
                 || !params.containsKey("rate")) {
 
+                String errorMessage = "Request doesn't have needed parameter(s): baseCurrencyCode, targetCurrencyCode, rate";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(
-                    "Request doesn't have needed parameter(s): baseCurrencyCode, targetCurrencyCode, rate"
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -103,10 +111,10 @@ public class ExchangeRatesServlet extends HttpServlet {
             String rateString = params.get("rate")[0];
 
             if (!baseCode.matches("^[A-Za-z]{3}$") || !targetCode.matches("^[A-Za-z]{3}$")) {
+                String errorMessage = "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(
-                    "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -114,8 +122,10 @@ public class ExchangeRatesServlet extends HttpServlet {
             try {
                 rate = Double.valueOf(rateString);
             } catch (NumberFormatException e) {
+                String errorMessage = "Can't get rate value: " + e.getMessage();
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Can't get rate value: " + e.getMessage()));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -123,16 +133,18 @@ public class ExchangeRatesServlet extends HttpServlet {
             CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
 
             if (baseCurrency == null || targetCurrency == null) {
+                String errorMessage = "Can't find base or/and target currencies";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print(JsonUtils.getError("Can't find base or/and target currencies"));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
             if (exchangeService.getExchangeByCodePair(baseCode, targetCode) != null) {
+                String errorMessage = "Exchange rate '" + baseCode + " to " + targetCode + "' already exists";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                out.print(JsonUtils.getError(
-                    "Exchange rate '" + baseCode + " to " + targetCode + "' already exists"
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -140,8 +152,8 @@ public class ExchangeRatesServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CREATED);
             out.print(JsonUtils.getExchange(newExchange));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP POST request", e);
         }
     }
 
@@ -154,8 +166,10 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         try (PrintWriter out = response.getWriter()) {
             if (rateString == null) {
+                String errorMessage = "Can't find 'rate' parameter";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Can't find 'rate' parameter"));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -163,22 +177,28 @@ public class ExchangeRatesServlet extends HttpServlet {
             try {
                 rate = Double.valueOf(rateString);
             } catch (NumberFormatException e) {
+                String errorMessage = "Can't get rate value: " + e.getMessage();
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Can't get rate value: " + e.getMessage()));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
             if (pathInfo == null || pathInfo.equals("/") || pathInfo.split("/").length != 2) {
+                String errorMessage = "Bad path. Currency codes are needed";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.println(JsonUtils.getError("Bad path. currency codes are needed"));
+                out.println(JsonUtils.getError(errorMessage));
                 return;
             }
 
             String codes = pathInfo.split("/")[1].toUpperCase();
 
             if (!codes.matches("^[A-Za-z]{6}$")) {
+                String errorMessage = "Path doesn't match to CODE1CODE2 pattern: " + codes;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError("Path doesn't match to CODE1CODE2 pattern: " + codes));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
@@ -189,27 +209,27 @@ public class ExchangeRatesServlet extends HttpServlet {
             CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
 
             if (baseCurrency == null || targetCurrency == null) {
+                String errorMessage = "Can't find base or/and target currencies: " + baseCode + ", " + targetCode;
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print(JsonUtils.getError(
-                    "Can't find base or/and target currencies: " + baseCode + ", " + targetCode
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
             ExchangeModel updatedExchange = exchangeService.updateExchange(baseCurrency, targetCurrency, rate);
             if (updatedExchange == null) {
+                String errorMessage = "Exchange rate '" + baseCode + " to " + targetCode + "' doesn't exist";
+                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print(JsonUtils.getError(
-                    "Exchange rate '" + baseCode + " to " + targetCode + "' doesn't exist"
-                ));
+                out.print(JsonUtils.getError(errorMessage));
                 return;
             }
 
             response.setStatus(HttpServletResponse.SC_OK);
             out.print(JsonUtils.getExchange(updatedExchange));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            request.getServletContext().log(
+                getClass().getName() + ": An exception occured during HTTP PUT request", e);
         }
 
     }

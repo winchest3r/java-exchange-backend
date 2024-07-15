@@ -17,13 +17,7 @@ public class CurrencyService {
     }
 
     public CurrencyModel getCurrencyByCode(String code) {
-        Optional<CurrencyModel> currencyOpt = currencyDao
-            .getAll()
-            .stream()
-            .parallel()
-            .filter(c -> c.getCode().equals(code.toUpperCase()))
-            .findAny();
-        return currencyOpt.isPresent() ? currencyOpt.get() : null;
+        return currencyDao.get(code);
     }
 
     public CurrencyModel createCurrency(String name, String code, String sign) {

@@ -1,0 +1,1 @@
+INSERT INTO currencies(fullName, code, sign) VALUES (?, ?, ?);

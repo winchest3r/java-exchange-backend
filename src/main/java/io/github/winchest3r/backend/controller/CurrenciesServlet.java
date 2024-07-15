@@ -21,7 +21,7 @@ public class CurrenciesServlet extends HttpServlet {
     public void init(ServletConfig config) {
         config.getServletContext().log(getClass().getName() + ": Initialization");
 
-        currencyService = new CurrencyService(new CurrencyDaoSimple());
+        currencyService = new CurrencyService(new CurrencyDaoSqlite());
     }
 
     @Override
@@ -81,6 +81,8 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("application/json");
+
         Map<String, String[]> params = request.getParameterMap();
         try (PrintWriter out = response.getWriter()) {
             if (!params.containsKey("name") || !params.containsKey("code") || !params.containsKey("sign")) {

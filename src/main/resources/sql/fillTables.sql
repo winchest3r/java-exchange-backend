@@ -1,4 +1,4 @@
-INSERT INTO currencies(currencyId, code, fullName, sign)
+INSERT INTO currencies(currencyId, fullName, code, sign)
 VALUES
     (0, "Russian Ruble", "RUB", "₽"),
     (1, "US Dollar", "USD", "$"),

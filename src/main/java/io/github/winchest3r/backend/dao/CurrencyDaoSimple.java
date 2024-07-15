@@ -23,6 +23,17 @@ public class CurrencyDaoSimple implements CurrencyDao {
     }
 
     @Override
+    public CurrencyModel get(String code) {
+        Optional<CurrencyModel> currencyOpt = db.currencies
+            .stream()
+            .parallel()
+            .filter(c -> c.getCode().equals(code.toUpperCase()))
+            .findAny();
+        
+        return currencyOpt.isPresent() ? currencyOpt.get() : null;
+    }
+
+    @Override
     public CurrencyModel create(String name, String code, String sign) {
         CurrencyModel cur = new CurrencyModel(name, code, sign).setId(db.currencies.size());
         db.currencies.add(cur);

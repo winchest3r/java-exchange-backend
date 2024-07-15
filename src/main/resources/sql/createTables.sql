@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS currencies (
     currencyId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    code TEXT NOT NULL,
-    fullName TEXT NOT NULL,
-    sign TEXT NOT NULL
+    code CHAR(3) NOT NULL,
+    fullName VARCHAR(20) NOT NULL,
+    sign VARCHAR(3) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS exchangeRates (

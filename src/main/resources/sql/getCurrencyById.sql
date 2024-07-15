@@ -1,0 +1,1 @@
+SELECT fullName, code, sign FROM currencies WHERE currencyId = ?;

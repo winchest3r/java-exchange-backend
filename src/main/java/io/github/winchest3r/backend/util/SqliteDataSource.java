@@ -15,6 +15,9 @@ public class SqliteDataSource implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        // Firstly initialize servlet context to get access to it from outside
+        SqlQueries.setServletContext(sce.getServletContext());
+        
         try {
             String dbPath = sce.getServletContext().getResource(SqlQueries.BASE_PATH).getPath() + DB_NAME;
 
@@ -98,7 +101,6 @@ public class SqliteDataSource implements ServletContextListener {
             dataSource.close();
         }
     }
-
 
     public static DataSource getDataSource() {
         return dataSource;

@@ -18,15 +18,7 @@ public class ExchangeService {
     }
 
     public ExchangeModel getExchangeByCodePair(String baseCode, String targetCode) {
-        Optional<ExchangeModel> exchangeOpt = exchangeDao
-            .getAll()
-            .stream()
-            .parallel()
-            .filter(e -> 
-                e.getBaseCurrency().getCode().equals(baseCode.toUpperCase())
-                && e.getTargetCurrency().getCode().equals(targetCode.toUpperCase()))
-            .findAny();
-        return exchangeOpt.isPresent() ? exchangeOpt.get() : null;
+        return exchangeDao.get(baseCode, targetCode);
     }
 
     public ExchangeModel createExchange(CurrencyModel base, CurrencyModel target, double rate) {
@@ -34,6 +26,6 @@ public class ExchangeService {
     }
 
     public ExchangeModel updateExchange(CurrencyModel base, CurrencyModel target, double rate) {
-        return exchangeDao.update(base.getId(), target.getId(), rate);
+        return exchangeDao.update(base, target, rate);
     }
 }

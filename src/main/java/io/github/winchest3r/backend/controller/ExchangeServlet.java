@@ -22,8 +22,8 @@ public class ExchangeServlet  extends HttpServlet {
     public void init(ServletConfig config) {
         config.getServletContext().log(getClass().getName() + ": Initialization");
 
-        currencyService = new CurrencyService(new CurrencyDaoSimple());
-        exchangeService = new ExchangeService(new ExchangeDaoSimple());
+        exchangeService = new ExchangeService(new ExchangeDaoSqlite());
+        currencyService = new CurrencyService(new CurrencyDaoSqlite());
     }
 
     @Override
@@ -33,81 +33,89 @@ public class ExchangeServlet  extends HttpServlet {
         Map<String, String[]> params = request.getParameterMap();
 
         try (PrintWriter out = response.getWriter()) {
-            if (!params.containsKey("from") || !params.containsKey("to") || !params.containsKey("amount")) {
-                String errorMessage = "Request doesn't have needed parameter(s): from, to, amount";
-                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(errorMessage));
-                return;
-            }
-
-            String baseCode = params.get("from")[0].toUpperCase();
-            String targetCode = params.get("to")[0].toUpperCase();
-            String amountString = params.get("amount")[0];
-
-            if (!baseCode.matches("^[A-Za-z]{3}$") || !targetCode.matches("^[A-Za-z]{3}$")) {
-                String errorMessage = "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode;
-                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(errorMessage));
-                return;
-            }
-
-            Double amount = null;
             try {
-                amount = Double.valueOf(amountString);
-            } catch (NumberFormatException e) {
-                String errorMessage = "Can't get amount value: " + e.getMessage();
-                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print(JsonUtils.getError(errorMessage));
-                return;
-            }
+                if (!params.containsKey("from") || !params.containsKey("to") || !params.containsKey("amount")) {
+                    String errorMessage = "Request doesn't have needed parameter(s): from, to, amount";
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print(JsonUtils.getError(errorMessage));
+                    return;
+                }
 
-            if (baseCode.equals(targetCode)) {
-                CurrencyModel currency = currencyService.getCurrencyByCode(baseCode);
-                response.setStatus(HttpServletResponse.SC_OK);
-                out.print(JsonUtils.getConvertedAmount(currency, currency, 1, amount));
-                return;
-            }
+                String baseCode = params.get("from")[0].toUpperCase();
+                String targetCode = params.get("to")[0].toUpperCase();
+                String amountString = params.get("amount")[0];
 
-            CurrencyModel baseCurrency = currencyService.getCurrencyByCode(baseCode);
-            CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
+                if (!baseCode.matches("^[A-Za-z]{3}$") || !targetCode.matches("^[A-Za-z]{3}$")) {
+                    String errorMessage = "Base or/and target code don't match to three letter pattern: " + baseCode + ", " + targetCode;
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print(JsonUtils.getError(errorMessage));
+                    return;
+                }
 
-            if (baseCurrency == null || targetCurrency == null) {
-                String errorMessage = "Can't find base or/and target currencies: " + baseCode + ", " + targetCode;
-                request.getServletContext().log(getClass().getName() + ": " + errorMessage);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print(JsonUtils.getError(errorMessage));
-                return;
-            }
+                Double amount = null;
+                try {
+                    amount = Double.valueOf(amountString);
+                } catch (NumberFormatException e) {
+                    String errorMessage = "Can't get amount value: " + e.getMessage();
+                    request.getServletContext().log(getClass().getName() + ": " + errorMessage);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print(JsonUtils.getError(errorMessage));
+                    return;
+                }
 
-            ExchangeModel exchange = exchangeService.getExchangeByCodePair(baseCode, targetCode);
-            ExchangeModel reversedExchange = exchangeService.getExchangeByCodePair(targetCode, baseCode);
-            
-            Double rate = null;
+                if (baseCode.equals(targetCode)) {
+                    CurrencyModel currency = currencyService.getCurrencyByCode(baseCode);
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    out.print(JsonUtils.getConvertedAmount(currency, currency, 1, amount));
+                    return;
+                }
 
-            if (exchange != null) {
-                rate = exchange.getRate();
-            } else if (reversedExchange != null) {
-                rate = 1 / reversedExchange.getRate();
-            } else {
-                ExchangeModel usdToBase = exchangeService.getExchangeByCodePair("USD", baseCode);
-                ExchangeModel usdToTarget = exchangeService.getExchangeByCodePair("USD", targetCode);
+                CurrencyModel baseCurrency = currencyService.getCurrencyByCode(baseCode);
+                CurrencyModel targetCurrency = currencyService.getCurrencyByCode(targetCode);
 
-                if (usdToBase == null || usdToTarget == null) {
-                    String errorMessage = "Can't find base and target exchanges: " + baseCode + ", " + targetCode;
+                if (baseCurrency == null || targetCurrency == null) {
+                    String errorMessage = "Can't find base or/and target currencies: " + baseCode + ", " + targetCode;
                     request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     out.print(JsonUtils.getError(errorMessage));
                     return;
                 }
 
-                rate = usdToTarget.getRate() / usdToBase.getRate();
-            }
+                ExchangeModel exchange = exchangeService.getExchangeByCodePair(baseCode, targetCode);
+                ExchangeModel reversedExchange = exchangeService.getExchangeByCodePair(targetCode, baseCode);
+                
+                Double rate = null;
 
-            response.setStatus(HttpServletResponse.SC_OK);
-            out.print(JsonUtils.getConvertedAmount(baseCurrency, targetCurrency, rate, amount));
+                if (exchange != null) {
+                    rate = exchange.getRate();
+                } else if (reversedExchange != null) {
+                    rate = 1 / reversedExchange.getRate();
+                } else {
+                    ExchangeModel usdToBase = exchangeService.getExchangeByCodePair("USD", baseCode);
+                    ExchangeModel usdToTarget = exchangeService.getExchangeByCodePair("USD", targetCode);
+
+                    if (usdToBase == null || usdToTarget == null) {
+                        String errorMessage = "Can't find base and target exchanges: " + baseCode + ", " + targetCode;
+                        request.getServletContext().log(getClass().getName() + ": " + errorMessage);
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        out.print(JsonUtils.getError(errorMessage));
+                        return;
+                    }
+
+                    rate = usdToTarget.getRate() / usdToBase.getRate();
+                }
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                out.print(JsonUtils.getConvertedAmount(baseCurrency, targetCurrency, rate, amount));
+            } catch (Exception e) {
+                String errorMessage = "Server exception occured: " + e.getMessage();
+                request.getServletContext().log(errorMessage, e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                out.print(JsonUtils.getError(errorMessage));
+                return;
+            }
         } catch (Exception e) {
             request.getServletContext().log(
                 getClass().getName() + ": An exception occured during HTTP GET request", e);

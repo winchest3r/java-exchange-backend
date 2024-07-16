@@ -106,7 +106,7 @@ public class CurrencyDaoSqlite implements CurrencyDao {
             }
         } catch (Exception e) {
             throw new RuntimeException(
-                getClass().getName() + " An exception during specific data receiving", e);
+                getClass().getName() + " An exception during object creation", e);
         }
         return null;
     }   

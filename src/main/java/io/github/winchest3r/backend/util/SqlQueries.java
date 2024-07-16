@@ -20,6 +20,14 @@ public class SqlQueries {
 
     public static final String GET_EXCHANGE_RATES = BASE_PATH + "getExchangeRates.sql";
 
+    public static final String GET_EXCHANGE_RATES_BY_ID = BASE_PATH + "getExchangeRatesById.sql";
+
+    public static final String GET_EXCHANGE_RATES_BY_CODES = BASE_PATH + "getExchangeRatesByCodes.sql";
+
+    public static final String CREATE_NEW_EXCHANGE_RATE = BASE_PATH + "createNewExchangeRate.sql";
+
+    public static final String UPDATE_EXCHANGE_RATE = BASE_PATH + "updateExchangeRate.sql";
+
     private static ServletContext context;
 
     public static void setServletContext(ServletContext servletContext) {

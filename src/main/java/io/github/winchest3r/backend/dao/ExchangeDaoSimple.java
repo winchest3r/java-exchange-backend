@@ -46,8 +46,8 @@ public class ExchangeDaoSimple implements ExchangeDao {
     }
 
     @Override
-    public ExchangeModel update(int baseId, int targetId, double rate) {
-        ExchangeModel sought = get(baseId, targetId);
+    public ExchangeModel update(CurrencyModel base, CurrencyModel target, double rate) {
+        ExchangeModel sought = get(base.getId(), target.getId());
         if (sought != null) {
             ExchangeModel updatedExchange = sought.setRate(rate);
             db.exchangeRates.set(sought.getId(), updatedExchange);

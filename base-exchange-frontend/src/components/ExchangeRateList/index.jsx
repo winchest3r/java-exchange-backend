@@ -1,6 +1,14 @@
-const ExchangeRateList = ({ exchangeRates, setExchangeRates }) => {
+import ExchangeRateForm from "./ExchangeRateForm";
+
+const ExchangeRateList = ({ exchangeRates, setExchangeRates, setNote, currencies }) => {
     return (
         <div>
+            <ExchangeRateForm
+                exchangeRates={exchangeRates}
+                setExchangeRates={setExchangeRates}
+                setNote={setNote}
+                currencies={currencies}
+            />
             <table>
                 <thead>
                     <tr>

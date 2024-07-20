@@ -1,6 +1,13 @@
-const CurrencyList = ({ currencies, setCurrencies }) => {
+import AddNewCurrencyForm from "./AddNewCurrencyForm";
+
+const CurrencyList = ({ currencies, setCurrencies, setNote }) => {
     return (
         <div>
+            <AddNewCurrencyForm
+                currencies={currencies}
+                setCurrencies={setCurrencies}
+                setNote={setNote}
+            />
             <table>
                 <thead>
                     <tr>

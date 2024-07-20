@@ -6,7 +6,7 @@
 
   <groupId>io.github.winchest3r</groupId>
   <artifactId>java-exchange-backend</artifactId>
-  <version>0.8.0</version>
+  <version>0.9.0</version>
   <packaging>war</packaging>
 
   <name>java-exchange-backend Maven Webapp</name>

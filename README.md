@@ -1,5 +1,9 @@
 # Exchange Backend
 
+Made with learning purpose
+
+Based on [this](https://zhukovsd.github.io/java-backend-learning-course/Projects/CurrencyExchange/) project
+
 | Request | Route                                                                | Example                                            |
 |---------|----------------------------------------------------------------------|----------------------------------------------------|
 | GET     | /api/currencies                                                      |                                                    |

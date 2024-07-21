@@ -93,10 +93,20 @@ public class ExchangeServlet  extends HttpServlet {
                 } else if (reversedExchange != null) {
                     rate = 1 / reversedExchange.getRate();
                 } else {
-                    ExchangeModel usdToBase = exchangeService.getExchangeByCodePair("USD", baseCode);
-                    ExchangeModel usdToTarget = exchangeService.getExchangeByCodePair("USD", targetCode);
+                    ExchangeModel crossToBase = null;
+                    ExchangeModel crossToTarget = null;
+                    
+                    // Cross rate check
+                    for (CurrencyModel cur : currencyService.getAllCurrencies()) {
+                        crossToBase = exchangeService.getExchangeByCodePair(cur.getCode(), baseCode);
+                        crossToTarget = exchangeService.getExchangeByCodePair(cur.getCode(), targetCode);
 
-                    if (usdToBase == null || usdToTarget == null) {
+                        if (crossToBase != null && crossToTarget != null) {
+                            break;
+                        }
+                    }
+
+                    if (crossToBase == null || crossToTarget == null) {
                         String errorMessage = "Can't find base and target exchanges: " + baseCode + ", " + targetCode;
                         request.getServletContext().log(getClass().getName() + ": " + errorMessage);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -104,7 +114,7 @@ public class ExchangeServlet  extends HttpServlet {
                         return;
                     }
 
-                    rate = usdToTarget.getRate() / usdToBase.getRate();
+                    rate = crossToTarget.getRate() / crossToBase.getRate();
                 }
 
                 response.setStatus(HttpServletResponse.SC_OK);

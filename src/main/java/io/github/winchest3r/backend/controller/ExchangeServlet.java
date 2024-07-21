@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.*;
 
 import java.util.*;
+import java.math.*;
 import java.io.*;
 
 import io.github.winchest3r.backend.service.*;
@@ -68,7 +69,7 @@ public class ExchangeServlet  extends HttpServlet {
                 if (baseCode.equals(targetCode)) {
                     CurrencyModel currency = currencyService.getCurrencyByCode(baseCode);
                     response.setStatus(HttpServletResponse.SC_OK);
-                    out.print(JsonUtils.getConvertedAmount(currency, currency, 1, amount));
+                    out.print(JsonUtils.getConvertedAmount(currency, currency, BigDecimal.ONE, amount));
                     return;
                 }
 
@@ -86,12 +87,12 @@ public class ExchangeServlet  extends HttpServlet {
                 ExchangeModel exchange = exchangeService.getExchangeByCodePair(baseCode, targetCode);
                 ExchangeModel reversedExchange = exchangeService.getExchangeByCodePair(targetCode, baseCode);
                 
-                Double rate = null;
+                BigDecimal rate = null;
 
                 if (exchange != null) {
                     rate = exchange.getRate();
                 } else if (reversedExchange != null) {
-                    rate = 1 / reversedExchange.getRate();
+                    rate = BigDecimal.ONE.divide(reversedExchange.getRate(), 4, RoundingMode.HALF_UP);
                 } else {
                     ExchangeModel crossToBase = null;
                     ExchangeModel crossToTarget = null;
@@ -114,7 +115,7 @@ public class ExchangeServlet  extends HttpServlet {
                         return;
                     }
 
-                    rate = crossToTarget.getRate() / crossToBase.getRate();
+                    rate = crossToTarget.getRate().divide(crossToBase.getRate(), 4, RoundingMode.HALF_UP);
                 }
 
                 response.setStatus(HttpServletResponse.SC_OK);

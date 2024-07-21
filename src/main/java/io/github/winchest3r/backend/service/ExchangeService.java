@@ -1,5 +1,6 @@
 package io.github.winchest3r.backend.service;
 
+import java.math.*;
 import java.util.*;
 
 import io.github.winchest3r.backend.dao.ExchangeDao;
@@ -21,11 +22,11 @@ public class ExchangeService {
         return exchangeDao.get(baseCode, targetCode);
     }
 
-    public ExchangeModel createExchange(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel createExchange(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         return exchangeDao.create(base, target, rate);
     }
 
-    public ExchangeModel updateExchange(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel updateExchange(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         return exchangeDao.update(base, target, rate);
     }
 }

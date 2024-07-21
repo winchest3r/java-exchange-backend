@@ -1,12 +1,14 @@
 package io.github.winchest3r.backend.model;
 
+import java.math.*;
+
 public class ExchangeModel {
     private int id;
     private CurrencyModel baseCurrency;
     private CurrencyModel targetCurrency;
-    private double rate;
+    private BigDecimal rate;
 
-    public ExchangeModel(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         this.baseCurrency = base;
         this.targetCurrency = target;
         this.rate = rate;
@@ -36,7 +38,7 @@ public class ExchangeModel {
         return targetCurrency;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
@@ -46,7 +48,7 @@ public class ExchangeModel {
      * @param rate
      * @return new object
      */
-    public ExchangeModel setRate(double rate) {
+    public ExchangeModel setRate(BigDecimal rate) {
         ExchangeModel ret = new ExchangeModel(baseCurrency, targetCurrency, rate);
         ret.id = id;
         return ret;

@@ -1,5 +1,8 @@
 package io.github.winchest3r.backend.util;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Locale;
 
 import io.github.winchest3r.backend.model.*;
@@ -37,13 +40,14 @@ public class JsonUtils {
     public static String getConvertedAmount(
         CurrencyModel base,
         CurrencyModel target,
-        double rate,
+        BigDecimal rate,
         double amount) {
         
         return String.format(
             Locale.US,
-            "{\"baseCurrency\":%s,\"targetCurrency\":%s,\"rate\":%.4f,\"amount\":%.4f,\"convertedAmount\":%.4f}",
-            getCurrency(base), getCurrency(target), rate, amount, rate * amount
+            "{\"baseCurrency\":%s,\"targetCurrency\":%s,\"rate\":%s,\"amount\":%.4f,\"convertedAmount\":%s}",
+            getCurrency(base), getCurrency(target), rate.toString(), amount, 
+            rate.multiply(BigDecimal.valueOf(amount)).setScale(2, RoundingMode.CEILING).toString()
         );
     }
 

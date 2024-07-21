@@ -1,6 +1,7 @@
 package io.github.winchest3r.backend.dao;
 
 import java.util.*;
+import java.math.*;
 
 import io.github.winchest3r.backend.model.*;
 
@@ -18,7 +19,7 @@ public interface ExchangeDao {
     
     ExchangeModel get(String baseCode, String targetCode);
 
-    ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate);
+    ExchangeModel create(CurrencyModel base, CurrencyModel target, BigDecimal rate);
 
-    ExchangeModel update(CurrencyModel base, CurrencyModel target, double rate);
+    ExchangeModel update(CurrencyModel base, CurrencyModel target, BigDecimal rate);
 }

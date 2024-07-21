@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.*;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.*;
 
@@ -124,9 +125,9 @@ public class ExchangeRatesServlet extends HttpServlet {
                     return;
                 }
 
-                Double rate = null;
+                BigDecimal rate = null;
                 try {
-                    rate = Double.valueOf(rateString);
+                    rate = new BigDecimal(rateString);
                 } catch (NumberFormatException e) {
                     String errorMessage = "Can't get rate value: " + e.getMessage();
                     request.getServletContext().log(getClass().getName() + ": " + errorMessage);
@@ -187,9 +188,9 @@ public class ExchangeRatesServlet extends HttpServlet {
                     return;
                 }
 
-                Double rate = null;
+                BigDecimal rate = null;
                 try {
-                    rate = Double.valueOf(rateString);
+                    rate = new BigDecimal(rateString);
                 } catch (NumberFormatException e) {
                     String errorMessage = "Can't get rate value: " + e.getMessage();
                     request.getServletContext().log(getClass().getName() + ": " + errorMessage);

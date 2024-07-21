@@ -1,6 +1,7 @@
 package io.github.winchest3r.backend.dao;
 
 import java.util.*;
+import java.math.*;
 
 import io.github.winchest3r.backend.model.*;
 import io.github.winchest3r.backend.util.SimpleDatabase;
@@ -39,14 +40,14 @@ public class ExchangeDaoSimple implements ExchangeDao {
     }
 
     @Override
-    public ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel create(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         ExchangeModel ex = new ExchangeModel(base, target, rate).setId(db.exchangeRates.size());
         db.exchangeRates.add(ex);
         return ex;
     }
 
     @Override
-    public ExchangeModel update(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel update(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         ExchangeModel sought = get(base.getId(), target.getId());
         if (sought != null) {
             ExchangeModel updatedExchange = sought.setRate(rate);

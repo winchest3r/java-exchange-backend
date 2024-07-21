@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS exchangeRates (
     exchangeId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     baseCurrencyId INTEGER NOT NULL,
     targetCurrencyId INTEGER NOT NULL,
-    rate REAL NOT NULL,
+    rate NUMERIC NOT NULL,
     FOREIGN KEY (baseCurrencyId)
         REFERENCES currencies (currency_id)
         ON DELETE CASCADE,

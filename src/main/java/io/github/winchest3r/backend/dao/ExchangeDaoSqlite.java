@@ -1,6 +1,7 @@
 package io.github.winchest3r.backend.dao;
 
 import java.util.*;
+import java.math.*;
 import java.sql.*;
 import javax.sql.*;
 
@@ -34,7 +35,7 @@ public class ExchangeDaoSqlite implements ExchangeDao {
                     String targetSign = rs.getString("targetSign");
                     int targetId = rs.getInt("targetId");
 
-                    double rate = rs.getDouble("rate");
+                    BigDecimal rate = rs.getBigDecimal("rate");
 
                     CurrencyModel base = new CurrencyModel(
                         baseName, baseCode, baseSign).setId(baseId);
@@ -72,7 +73,7 @@ public class ExchangeDaoSqlite implements ExchangeDao {
                         String targetCode = rs.getString("targetCode");
                         String targetSign = rs.getString("targetSign");
 
-                        double rate = rs.getDouble("rate");
+                        BigDecimal rate = rs.getBigDecimal("rate");
 
                         CurrencyModel base = new CurrencyModel(
                             baseName, baseCode, baseSign).setId(baseId);
@@ -114,7 +115,7 @@ public class ExchangeDaoSqlite implements ExchangeDao {
                         String targetSign = rs.getString("targetSign");
                         int targetId = rs.getInt("targetId");
 
-                        double rate = rs.getDouble("rate");
+                        BigDecimal rate = rs.getBigDecimal("rate");
 
                         CurrencyModel base = new CurrencyModel(
                             baseName, baseCode, baseSign).setId(baseId);
@@ -134,7 +135,7 @@ public class ExchangeDaoSqlite implements ExchangeDao {
     }
 
     @Override
-    public ExchangeModel create(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel create(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         try (Connection con = dataSource.getConnection()) {
             String query = SqlQueries.readQuery(SqlQueries.CREATE_NEW_EXCHANGE_RATE);
 
@@ -142,7 +143,7 @@ public class ExchangeDaoSqlite implements ExchangeDao {
             try (PreparedStatement prepStat = con.prepareStatement(query)) {
                 prepStat.setInt(1, base.getId());
                 prepStat.setInt(2, target.getId());
-                prepStat.setDouble(3, rate);
+                prepStat.setBigDecimal(3, rate);
                 result = prepStat.executeUpdate();
             }
 
@@ -157,13 +158,13 @@ public class ExchangeDaoSqlite implements ExchangeDao {
     }
 
     @Override
-    public ExchangeModel update(CurrencyModel base, CurrencyModel target, double rate) {
+    public ExchangeModel update(CurrencyModel base, CurrencyModel target, BigDecimal rate) {
         try (Connection con = dataSource.getConnection()) {
             String query = SqlQueries.readQuery(SqlQueries.UPDATE_EXCHANGE_RATE);
 
             int result = 0;
             try (PreparedStatement prepStat = con.prepareStatement(query)) {
-                prepStat.setDouble(1, rate);
+                prepStat.setBigDecimal(1, rate);
                 prepStat.setInt(2, base.getId());
                 prepStat.setInt(3, target.getId());
                 result = prepStat.executeUpdate();
